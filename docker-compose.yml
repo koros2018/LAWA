@@ -1,0 +1,98 @@
+version: "3.9"
+
+services:
+  # ── PostgreSQL ──
+  postgres:
+    image: postgres:16-alpine
+    container_name: lawa-db
+    environment:
+      POSTGRES_USER: lawa
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-lawa_dev}
+      POSTGRES_DB: lawa
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lawa"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis ──
+  redis:
+    image: redis:7-alpine
+    container_name: lawa-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ── FastAPI Backend ──
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lawa-backend
+    environment:
+      - APP_NAME=LAWA
+      - DEBUG=${DEBUG:-false}
+      - API_HOST=0.0.0.0
+      - API_PORT=6288
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=lawa
+      - DB_PASSWORD=${DB_PASSWORD:-lawa_dev}
+      - DB_NAME=lawa
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - LLM_NVIDIA_KEY=${LLM_NVIDIA_KEY}
+      - LLM_NVIDIA_BASE_URL=https://integrate.api.nvidia.com/v1
+      - LLM_NVIDIA_MODEL=deepseek-ai/deepseek-v4-pro
+      - LLM_OPENCODE_KEY=${LLM_OPENCODE_KEY}
+      - LLM_OPENCODE_BASE_URL=https://opencode.ai/zen/go/v1
+      - LLM_OPENCODE_MODEL=deepseek-v4-pro
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=llama3.2
+    ports:
+      - "6288:6288"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+
+  # ── Ollama (本地LLM兜底，可选) ──
+  ollama:
+    image: ollama/ollama:latest
+    container_name: lawa-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    profiles:
+      - local-llm  # 默认不启动，需要时加 --profile local-llm
+
+  # ── Frontend (Nginx) ──
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lawa-frontend
+    ports:
+      - "6289:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  ollama_data:
