@@ -1,0 +1,113 @@
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+
+const { t, locale } = useI18n()
+const router = useRouter()
+const route = useRoute()
+const isAuth = computed(() => !['login','register'].includes(route.name as string))
+
+const navItems = [
+  { to: '/dashboard',     icon: '🏠', label: 'dashboard' },
+  { to: '/assessment',    icon: '📝', label: 'assessment' },
+  { to: '/plan',          icon: '🗺',  label: 'plan' },
+  { to: '/companion',     icon: '💬', label: 'companion' },
+  { to: '/vocabulary',    icon: '📚', label: 'vocabulary' },
+  { to: '/coins',         icon: '🪙', label: 'coins' },
+  { to: '/tasks',         icon: '📋', label: 'tasks' },
+  { to: '/leaderboard',   icon: '🏆', label: 'leaderboard' },
+  { to: '/match',         icon: '🤝', label: 'match' },
+  { to: '/help',          icon: '🙋', label: 'help' },
+]
+
+function toggleLang() {
+  locale.value = locale.value === 'zh-CN' ? 'en' : 'zh-CN'
+}
+
+function logout() {
+  localStorage.removeItem('lawa_token')
+  localStorage.removeItem('lawa_user')
+  router.push('/login')
+}
+</script>
+
+<template>
+  <div id="app-shell">
+    <aside v-if="isAuth" class="sidebar">
+      <div class="logo" @click="router.push('/dashboard')">
+        🦝 <span class="logo-text">LAWA</span>
+      </div>
+      <nav>
+        <router-link v-for="item in navItems" :key="item.to" :to="item.to"
+          class="nav-item" active-class="active">
+          <span class="nav-icon">{{ item.icon }}</span>
+          <span class="nav-label">{{ t(item.label) }}</span>
+        </router-link>
+      </nav>
+      <div class="sidebar-footer">
+        <button @click="toggleLang" class="lang-btn" :title="locale === 'zh-CN' ? 'Switch to English' : '切换到中文'">
+          {{ locale === 'zh-CN' ? 'EN' : '中文' }}
+        </button>
+        <button @click="logout" class="logout-btn">{{ t('logout') }}</button>
+      </div>
+    </aside>
+    <main :class="{ 'full-width': !isAuth }">
+      <router-view />
+    </main>
+  </div>
+</template>
+
+<style>
+:root {
+  --primary: #667eea;
+  --sidebar-width: 200px;
+  --bg: #f5f7fa;
+}
+</style>
+
+<style scoped>
+#app-shell { display: flex; min-height: 100vh; }
+.sidebar {
+  width: var(--sidebar-width);
+  background: white;
+  border-right: 1px solid #e9ecef;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+  position: fixed;
+  top: 0; left: 0; height: 100vh;
+  z-index: 10;
+}
+.logo {
+  font-size: 1.3rem; font-weight: 700; padding: 8px 16px 20px;
+  cursor: pointer; user-select: none;
+}
+.logo-text { margin-left: 6px; }
+nav { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 0 8px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 8px;
+  text-decoration: none; color: #555; font-size: 0.9rem;
+  transition: background 0.15s;
+}
+.nav-item:hover { background: #f0f2ff; }
+.nav-item.active { background: #eef2ff; color: var(--primary); font-weight: 600; }
+.nav-icon { font-size: 1.1rem; }
+.nav-label { white-space: nowrap; }
+.sidebar-footer {
+  padding: 12px 16px; border-top: 1px solid #e9ecef;
+  display: flex; gap: 8px; flex-direction: column;
+}
+.lang-btn, .logout-btn {
+  padding: 8px; border: 1px solid #ddd; border-radius: 8px;
+  background: white; cursor: pointer; font-size: 0.8rem; color: #666;
+}
+.lang-btn:hover, .logout-btn:hover { background: #f8f9fa; }
+main {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  overflow-y: auto;
+}
+main.full-width { margin-left: 0; }
+</style>
