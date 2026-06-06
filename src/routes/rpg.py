@@ -5,9 +5,9 @@ LAWA RPG 系统 API 路由
 共 49 端点，18 个 Agent
 """
 from fastapi import APIRouter, HTTPException, Query, Depends
-from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.database import get_db
+from pydantic import BaseModel, Field
 from src.routes.auth import get_current_user
 from src.models.user import User
 from typing import Optional
