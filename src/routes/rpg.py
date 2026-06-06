@@ -6,6 +6,8 @@ LAWA RPG 系统 API 路由
 """
 from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
+from src.database import get_db
 from src.routes.auth import get_current_user
 from src.models.user import User
 from typing import Optional
@@ -151,7 +153,7 @@ from sqlalchemy import select
 
 @router.get("/world/zones")
 async def list_zones(db: AsyncSession = Depends(get_db)):
-        result = await session.execute(select(LanguageZone))
+        result = await db.execute(select(LanguageZone))
         zones = result.scalars().all()
         return {
             "zones": [
@@ -169,14 +171,14 @@ async def list_zones(db: AsyncSession = Depends(get_db)):
 
 @router.get("/world/zones/{zone_code}")
 async def get_zone(zone_code: str, db: AsyncSession = Depends(get_db)):
-        result = await session.execute(
+        result = await db.execute(
             select(LanguageZone).where(LanguageZone.code == zone_code)
         )
         zone = result.scalar_one_or_none()
         if not zone:
             raise HTTPException(404, f"区域不存在: {zone_code}")
 
-        nodes_result = await session.execute(
+        nodes_result = await db.execute(
             select(ZoneNode).where(ZoneNode.zone_id == zone.id)
         )
         nodes = nodes_result.scalars().all()
@@ -211,7 +213,7 @@ async def get_zone(zone_code: str, db: AsyncSession = Depends(get_db)):
 async def list_nodes(zone_code: Optional[str] = None, db: AsyncSession = Depends(get_db)):
         query = select(ZoneNode)
         if zone_code:
-            zone_result = await session.execute(
+            zone_result = await db.execute(
                 select(LanguageZone.id).where(LanguageZone.code == zone_code)
             )
             zone_id = zone_result.scalar_one_or_none()
@@ -219,7 +221,7 @@ async def list_nodes(zone_code: Optional[str] = None, db: AsyncSession = Depends
                 raise HTTPException(404, f"区域不存在: {zone_code}")
             query = query.where(ZoneNode.zone_id == zone_id)
 
-        result = await session.execute(query)
+        result = await db.execute(query)
         nodes = result.scalars().all()
         return {
             "nodes": [
@@ -352,7 +354,7 @@ async def generate_daily_quest_endpoint(req: QuestGenerateRequest):
 @router.post("/world/travel")
 async def travel_to_zone(req: TravelRequest, db: AsyncSession = Depends(get_db)):
         # 查找目标区域
-        result = await session.execute(
+        result = await db.execute(
             select(LanguageZone).where(LanguageZone.code == req.target_zone_code)
         )
         target = result.scalar_one_or_none()
@@ -361,7 +363,7 @@ async def travel_to_zone(req: TravelRequest, db: AsyncSession = Depends(get_db))
 
         # 检查用户当前区域
         from src.models.user import LawaProfile
-        profile_result = await session.execute(
+        profile_result = await db.execute(
             select(LawaProfile).where(LawaProfile.user_id == req.user_id)
         )
         profile = profile_result.scalar_one_or_none()
@@ -371,7 +373,7 @@ async def travel_to_zone(req: TravelRequest, db: AsyncSession = Depends(get_db))
         # 更新当前位置
         profile.current_zone_id = target.id
         profile.home_zone = target.code  # 保留兼容
-        await session.commit()
+        await db.commit()
 
         return {
             "status": "ok",
