@@ -1,29 +1,24 @@
-"""
-LAWA RPG 世界地图 API 路由
-
-4 个端点：zones + nodes + travel
-"""
-from fastapi import APIRouter, HTTPException, Depends, Query
-from pydantic import BaseModel
+"""世界地图 & 区域旅行路由"""
+from fastapi import APIRouter, HTTPException, Query, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from typing import Optional
 from src.database import get_db
 from src.models.world import LanguageZone, ZoneNode, ZoneConnection
+from sqlalchemy import select
 from src.models.user import LawaProfile
+from typing import Optional
+from pydantic import BaseModel
 
-router = APIRouter(prefix="/world", tags=["RPG-世界"])
+router = APIRouter(prefix="/world", tags=["RPG-World"])
 
 
-# ── 请求模型 ──
 class TravelRequest(BaseModel):
     user_id: str
     target_zone_code: str
 
 
-# ── 端点 ──
 @router.get("/zones")
 async def list_zones(db: AsyncSession = Depends(get_db)):
+    """列出所有语言区域"""
     result = await db.execute(select(LanguageZone))
     zones = result.scalars().all()
     return {
@@ -43,6 +38,7 @@ async def list_zones(db: AsyncSession = Depends(get_db)):
 
 @router.get("/zones/{zone_code}")
 async def get_zone(zone_code: str, db: AsyncSession = Depends(get_db)):
+    """获取区域详情（含所有节点）"""
     result = await db.execute(
         select(LanguageZone).where(LanguageZone.code == zone_code)
     )
@@ -83,9 +79,8 @@ async def get_zone(zone_code: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/nodes")
-async def list_nodes(
-    zone_code: Optional[str] = None, db: AsyncSession = Depends(get_db)
-):
+async def list_nodes(zone_code: Optional[str] = None, db: AsyncSession = Depends(get_db)):
+    """列出场景节点（支持按区域筛选）"""
     query = select(ZoneNode)
     if zone_code:
         zone_result = await db.execute(
@@ -119,6 +114,7 @@ async def list_nodes(
 
 @router.post("/travel")
 async def travel_to_zone(req: TravelRequest, db: AsyncSession = Depends(get_db)):
+    """跨区域旅行"""
     result = await db.execute(
         select(LanguageZone).where(LanguageZone.code == req.target_zone_code)
     )
@@ -145,5 +141,5 @@ async def travel_to_zone(req: TravelRequest, db: AsyncSession = Depends(get_db))
             "code": target.code,
             "name": target.name,
             "culture_theme": target.culture_theme,
-        },
+        }
     }

@@ -1,19 +1,14 @@
-"""
-LAWA RPG 角色系统 API 路由
-
-8 个端点，CharacterAgent
-"""
+"""角色系统路由"""
 from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
-from src.database import get_db
+from pydantic import BaseModel, Field
+from src.routes.auth import get_current_user
+from src.models.user import User
 from src.agent.character_agent import CharacterAgent, CHARACTER_CLASSES
 
-router = APIRouter(prefix="/character", tags=["RPG-角色"])
+router = APIRouter(prefix="/character", tags=["RPG-Character"])
 character_agent = CharacterAgent()
 
 
-# ── 请求模型 ──
 class AddXPRequest(BaseModel):
     user_id: str
     source: str = "study_10min"
@@ -36,7 +31,6 @@ class SetTitleRequest(BaseModel):
     title: str
 
 
-# ── 端点 ──
 @router.get("/classes")
 async def list_classes():
     """列出所有可选职业"""
@@ -44,7 +38,7 @@ async def list_classes():
 
 
 @router.get("/{user_id}")
-async def get_character(user_id: str, db: AsyncSession = Depends(get_db)):
+async def get_character(user_id: str):
     """获取角色面板"""
     result = await character_agent.run({"action": "get_profile", "user_id": user_id})
     if "error" in result:
@@ -53,7 +47,7 @@ async def get_character(user_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/{user_id}/xp")
-async def get_xp(user_id: str, db: AsyncSession = Depends(get_db)):
+async def get_xp(user_id: str):
     """获取经验值信息"""
     result = await character_agent.run({"action": "get_xp", "user_id": user_id})
     if "error" in result:
@@ -62,7 +56,7 @@ async def get_xp(user_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/{user_id}/stats")
-async def get_stats(user_id: str, db: AsyncSession = Depends(get_db)):
+async def get_stats(user_id: str):
     """获取角色统计"""
     result = await character_agent.run({"action": "get_stats", "user_id": user_id})
     if "error" in result:
@@ -71,7 +65,7 @@ async def get_stats(user_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/xp")
-async def add_xp(req: AddXPRequest, db: AsyncSession = Depends(get_db)):
+async def add_xp(req: AddXPRequest):
     """增加经验值（自动处理升级）"""
     result = await character_agent.run({
         "action": "add_xp",
@@ -85,7 +79,7 @@ async def add_xp(req: AddXPRequest, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/class")
-async def choose_class(req: ChooseClassRequest, db: AsyncSession = Depends(get_db)):
+async def choose_class(req: ChooseClassRequest):
     """选择职业"""
     result = await character_agent.run({
         "action": "choose_class",
@@ -98,7 +92,7 @@ async def choose_class(req: ChooseClassRequest, db: AsyncSession = Depends(get_d
 
 
 @router.post("/talent")
-async def allocate_talent(req: AllocateTalentRequest, db: AsyncSession = Depends(get_db)):
+async def allocate_talent(req: AllocateTalentRequest):
     """分配天赋点"""
     result = await character_agent.run({
         "action": "allocate_talent",
@@ -112,7 +106,7 @@ async def allocate_talent(req: AllocateTalentRequest, db: AsyncSession = Depends
 
 
 @router.post("/title")
-async def set_title(req: SetTitleRequest, db: AsyncSession = Depends(get_db)):
+async def set_title(req: SetTitleRequest):
     """设置称号"""
     result = await character_agent.run({
         "action": "set_title",
