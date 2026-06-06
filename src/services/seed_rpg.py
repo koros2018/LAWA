@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import select, delete
 from loguru import logger
-from src.database import AsyncSessionLocal, init_db
+from src.database.main import AsyncSessionLocal, init_db
 from src.models.world import LanguageZone, ZoneNode, ZoneConnection
 from src.models.quest import QuestTemplate
 from src.models.user import LawaProfile

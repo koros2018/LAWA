@@ -13,6 +13,7 @@ from loguru import logger
 from sqlalchemy import select, func as sa_func
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.database import AsyncSessionLocal
+from src.database.session import get_async_session
 from src.models.leaderboard import LeaderboardEntry, LeaderboardSnapshot
 from src.agent.base_agent import BaseAgent
 from src.services.cache_service import cache_service, cached
@@ -51,7 +52,7 @@ class LeaderboardAgent(BaseAgent):
         board_type = payload.get("board_type", "coins")
         score = payload.get("score", 1)
 
-        async with AsyncSessionLocal() as session:
+        async with get_async_session() as session:
             for period in ["daily", "weekly", "all"]:
                 stmt = select(LeaderboardEntry).where(
                     LeaderboardEntry.user_id == user_id,
@@ -89,7 +90,7 @@ class LeaderboardAgent(BaseAgent):
         limit = payload.get("limit", 20)
         user_id = payload.get("user_id")
 
-        async with AsyncSessionLocal() as session:
+        async with get_async_session() as session:
             # 查询排行榜条目
             stmt = (
                 select(LeaderboardEntry)
@@ -162,7 +163,7 @@ class LeaderboardAgent(BaseAgent):
         user_id = payload["user_id"]
         uid = _uuid.UUID(user_id) if isinstance(user_id, str) else user_id
 
-        async with AsyncSessionLocal() as session:
+        async with get_async_session() as session:
             # 查用户所有条目
             stmt = select(LeaderboardEntry).where(LeaderboardEntry.user_id == uid)
             result = await session.execute(stmt)
@@ -214,7 +215,7 @@ class LeaderboardAgent(BaseAgent):
         today = date.today()
         snapshots = {}
 
-        async with AsyncSessionLocal() as session:
+        async with get_async_session() as session:
             for board_type in self.TYPES:
                 stmt = (
                     select(LeaderboardEntry)

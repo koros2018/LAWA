@@ -16,7 +16,7 @@ from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel, Field
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.database import get_db
+from src.database.main import get_db
 from src.agent.companion_agent import CompanionAgent
 from src.services.correction import correction_engine
 

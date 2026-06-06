@@ -15,6 +15,7 @@ from sqlalchemy import select, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.agent.base_agent import BaseAgent
 from src.database import AsyncSessionLocal
+from src.database.session import get_async_session
 from src.models.help import HelpRequest, HelpResponse
 
 
@@ -81,7 +82,7 @@ class HelpAgent(BaseAgent):
             reward_coin=payload.get("reward_coin", 0),
             status="open",
         )
-        async with AsyncSessionLocal() as session:
+        async with get_async_session() as session:
             session.add(request)
             await session.commit()
             await session.refresh(request)
@@ -93,7 +94,7 @@ class HelpAgent(BaseAgent):
     # ── 回答 ──
     async def respond(self, payload: dict) -> dict:
         req_id = payload["request_id"]
-        async with AsyncSessionLocal() as session:
+        async with get_async_session() as session:
             stmt = select(HelpRequest).where(HelpRequest.id == req_id)
             result = await session.execute(stmt)
             request = result.scalar_one_or_none()
@@ -123,7 +124,7 @@ class HelpAgent(BaseAgent):
     async def accept_answer(self, payload: dict) -> dict:
         req_id = payload["request_id"]
         resp_id = payload["response_id"]
-        async with AsyncSessionLocal() as session:
+        async with get_async_session() as session:
             # 查询求助帖
             stmt = select(HelpRequest).where(HelpRequest.id == req_id)
             result = await session.execute(stmt)
@@ -172,7 +173,7 @@ class HelpAgent(BaseAgent):
         language = payload.get("language")
         user_id = payload.get("user_id")
 
-        async with AsyncSessionLocal() as session:
+        async with get_async_session() as session:
             # 构建查询
             stmt = select(HelpRequest)
 
@@ -205,7 +206,7 @@ class HelpAgent(BaseAgent):
     # ── 详情 ──
     async def get_detail(self, payload: dict) -> dict:
         req_id = payload["request_id"]
-        async with AsyncSessionLocal() as session:
+        async with get_async_session() as session:
             stmt = select(HelpRequest).where(HelpRequest.id == req_id)
             result = await session.execute(stmt)
             request = result.scalar_one_or_none()

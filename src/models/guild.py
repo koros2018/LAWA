@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, Integer, Float, Text, JSON, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
-from src.database import Base
+from src.database.main import Base
 
 
 def _newid() -> str:

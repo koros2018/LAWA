@@ -17,7 +17,7 @@ from sqlalchemy import select, and_, or_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.agent.base_agent import BaseAgent
-from src.database import AsyncSessionLocal
+from src.database.main import AsyncSessionLocal
 from src.models.quest import QuestTemplate, UserQuest, DungeonInstance
 from src.models.user import User, LawaProfile
 from src.services.llm_service import llm_service

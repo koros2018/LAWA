@@ -11,7 +11,7 @@ from datetime import datetime
 from sqlalchemy import String, Integer, Float, DateTime, ForeignKey, Text, JSON, Boolean, Enum as SAEnum, func
 from src.models.compat import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from src.database import Base
+from src.database.main import Base
 import enum
 
 

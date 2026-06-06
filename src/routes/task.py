@@ -18,7 +18,7 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.routes.auth import get_current_user
 from src.models.user import User
-from src.database import get_db
+from src.database.main import get_db
 from src.agent.task_agent import TaskAgent
 from src.services.task_scheduler import enforce_task_deadlines
 

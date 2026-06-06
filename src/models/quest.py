@@ -11,7 +11,7 @@ from datetime import datetime
 from sqlalchemy import String, Integer, DateTime, ForeignKey, Text, JSON, Boolean, func
 from src.models.compat import UUID, ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
-from src.database import Base
+from src.database.main import Base
 
 
 class QuestTemplate(Base):

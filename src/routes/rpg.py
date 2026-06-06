@@ -6,7 +6,7 @@ LAWA RPG 系统 API 路由
 """
 from fastapi import APIRouter, HTTPException, Query, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.database import get_db
+from src.database.main import get_db
 from pydantic import BaseModel, Field
 from src.routes.auth import get_current_user
 from src.models.user import User
@@ -147,7 +147,7 @@ async def set_title(req: SetTitleRequest):
 # ═══════════════════════════════════════
 #  世界地图
 # ═══════════════════════════════════════
-from src.database import get_db
+from src.database.main import get_db
 from src.models.world import LanguageZone, ZoneNode, ZoneConnection
 from sqlalchemy import select
 

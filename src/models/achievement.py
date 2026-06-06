@@ -8,7 +8,7 @@ Badge: 徽章（展示在角色面板）
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, Integer, Text, JSON, ForeignKey, DateTime, Float
-from src.database import Base
+from src.database.main import Base
 
 
 def _newid() -> str:

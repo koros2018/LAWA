@@ -17,7 +17,7 @@ from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel, Field
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.database import get_db
+from src.database.main import get_db
 from src.agent.coin_agent import CoinAgent
 from src.routes.auth import get_current_user
 from src.models.user import User

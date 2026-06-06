@@ -1,7 +1,7 @@
 """世界地图 & 区域旅行路由"""
 from fastapi import APIRouter, HTTPException, Query, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.database import get_db
+from src.database.main import get_db
 from src.models.world import LanguageZone, ZoneNode, ZoneConnection
 from sqlalchemy import select
 from src.models.user import LawaProfile

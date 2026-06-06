@@ -11,7 +11,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.database import get_db
+from src.database.main import get_db
 from src.agent.persona_agent import PersonaAgent
 from src.agent.plan_agent import PlanAgent
 

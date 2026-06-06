@@ -53,3 +53,12 @@ async def init_db():
 async def close_db():
     """关闭数据库连接"""
     await engine.dispose()
+
+
+async def get_async_session() -> AsyncSession:
+    """Agent 层获取异步数据库会话
+    
+    返回一个可直接使用的 AsyncSession 实例，调用者负责 commit/rollback/close。
+    与路由层 get_db() 使用同一个 AsyncSessionLocal，确保会话配置一致。
+    """
+    return AsyncSessionLocal()

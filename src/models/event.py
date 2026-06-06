@@ -7,7 +7,7 @@ UserEvent: 用户参与记录
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, Integer, Text, JSON, DateTime, ForeignKey, Boolean
-from src.database import Base
+from src.database.main import Base
 
 
 def _newid() -> str:

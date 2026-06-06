@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from loguru import logger
 
-from src.database import get_db
+from src.database.main import get_db
 from src.models.user import User, LawaProfile, PasswordResetToken
 from src.utils.security import hash_password, verify_password, create_access_token, decode_access_token
 from src.config import settings

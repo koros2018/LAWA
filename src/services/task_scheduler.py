@@ -5,7 +5,7 @@ LAWA 任务调度服务
 from datetime import datetime, timezone
 from sqlalchemy import select, update
 from loguru import logger
-from src.database import AsyncSessionLocal
+from src.database.main import AsyncSessionLocal
 from src.models.task import Task, TaskStatus
 
 

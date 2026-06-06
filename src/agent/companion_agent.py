@@ -21,6 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.agent.base_agent import BaseAgent
 from src.config import settings
 from src.database import AsyncSessionLocal
+from src.database.session import get_async_session
 from src.services.llm_service import llm_service
 from src.services.correction import correction_engine
 from src.services.vocabulary import vocabulary_service, spaced_repetition
@@ -198,7 +199,7 @@ class CompanionAgent(BaseAgent):
         if not user_id:
             return {"error": "user_id required"}
 
-        async with AsyncSessionLocal() as db:
+        async with get_async_session() as db:
             result = await db.execute(
                 select(CompanionSession)
                 .where(CompanionSession.user_id == user_id)
@@ -218,7 +219,7 @@ class CompanionAgent(BaseAgent):
         if not session_id:
             return {"error": "session_id required"}
 
-        async with AsyncSessionLocal() as db:
+        async with get_async_session() as db:
             result = await db.execute(
                 select(CompanionSession).where(CompanionSession.id == session_id)
             )
@@ -308,7 +309,7 @@ Give a warm, natural opening greeting (2-3 sentences) to start the conversation.
         session_id = uuid.uuid4()
         now = datetime.now(timezone.utc)
 
-        async with AsyncSessionLocal() as db:
+        async with get_async_session() as db:
             session = CompanionSession(
                 id=session_id,
                 user_id=user_id,
@@ -371,7 +372,7 @@ Give a warm, natural opening greeting (2-3 sentences) to start the conversation.
         if not user_message:
             return {"error": "消息不能为空"}
 
-        async with AsyncSessionLocal() as db:
+        async with get_async_session() as db:
             # 查询会话
             result = await db.execute(
                 select(CompanionSession).where(CompanionSession.id == session_id)
@@ -497,7 +498,7 @@ Give a warm, natural opening greeting (2-3 sentences) to start the conversation.
         if not session_id:
             return {"error": "session_id required"}
 
-        async with AsyncSessionLocal() as db:
+        async with get_async_session() as db:
             result = await db.execute(
                 select(CompanionSession).where(CompanionSession.id == session_id)
             )
@@ -635,7 +636,7 @@ Return JSON:
         dry_run = payload.get("dry_run", False)
         cutoff = datetime.now(timezone.utc) - timedelta(minutes=timeout_minutes)
 
-        async with AsyncSessionLocal() as db:
+        async with get_async_session() as db:
             # 查询过期会话
             result = await db.execute(
                 select(CompanionSession)

@@ -20,7 +20,7 @@ from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from src.agent.assessment_agent import AssessmentAgent
-from src.database import get_db
+from src.database.main import get_db
 from src.models.assessment import Assessment, AssessmentQuestion
 
 router = APIRouter(prefix="/api/v1/assessment", tags=["水平评估"])

@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from src.config import settings
-from src.database import init_db, close_db
+from src.database.main import init_db, close_db
 from src.routes import auth_router, assessment_router, persona_plan_router, coin_router, companion_router, task_router, community_router, rpg_router, tutor_router, vocabulary_router, llm_config_router
 import src.models  # 确保所有模型在 init_db 前注册
 

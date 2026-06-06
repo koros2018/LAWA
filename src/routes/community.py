@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel, Field
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.database import get_db
+from src.database.main import get_db
 from src.agent.leaderboard_agent import LeaderboardAgent
 from src.agent.match_agent import MatchAgent
 from src.agent.help_agent import HelpAgent

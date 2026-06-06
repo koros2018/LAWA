@@ -6,7 +6,8 @@ AchievementAgent — 成就系统
 import logging
 from datetime import datetime, timezone
 from sqlalchemy import select, and_
-from src.database import AsyncSessionLocal
+from src.database.main import AsyncSessionLocal
+from src.database.session import get_async_session
 from src.models.achievement import (
     Achievement, UserAchievement, Badge, ALL_ACHIEVEMENTS,
 )
@@ -46,7 +47,7 @@ class AchievementAgent(BaseAgent):
     async def list_all(self, payload: dict) -> dict:
         user_id = payload.get("user_id")
         category = payload.get("category", "all")
-        async with AsyncSessionLocal() as session:
+        async with get_async_session() as session:
             # 确保种子数据已入库
             await self._seed_achievements(session)
 
@@ -98,7 +99,7 @@ class AchievementAgent(BaseAgent):
         track_code = payload.get("code", "")          # 对应的成就code
         track_value = payload.get("value", 1)
 
-        async with AsyncSessionLocal() as session:
+        async with get_async_session() as session:
             await self._seed_achievements(session)
 
             # 找匹配的成就
@@ -151,7 +152,7 @@ class AchievementAgent(BaseAgent):
 
     async def my_badges(self, payload: dict) -> dict:
         user_id = payload["user_id"]
-        async with AsyncSessionLocal() as session:
+        async with get_async_session() as session:
             await self._seed_achievements(session)
 
             # 获取完成的成就
@@ -187,7 +188,7 @@ class AchievementAgent(BaseAgent):
     async def check_and_unlock(self, payload: dict) -> dict:
         """批量检查所有可能的成就解锁"""
         user_id = payload["user_id"]
-        async with AsyncSessionLocal() as session:
+        async with get_async_session() as session:
             profile = await self._get_profile(session, user_id)
             if not profile:
                 return {"error": "用户画像不存在"}

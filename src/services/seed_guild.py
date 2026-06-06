@@ -3,7 +3,7 @@ LAWA RPG 公会系统种子数据
 """
 import asyncio
 import logging
-from src.database import AsyncSessionLocal
+from src.database.main import AsyncSessionLocal
 from src.models.guild import LanguageGuild, GuildMember, GuildTask
 
 logger = logging.getLogger(__name__)

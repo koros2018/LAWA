@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.database import get_db
+from src.database.main import get_db
 from src.agent.tutor_agent import TutorAgent
 
 router = APIRouter(prefix="/api/v1/tutor", tags=["AI伴读导师"])
