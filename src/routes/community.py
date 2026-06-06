@@ -1,17 +1,21 @@
 """
 LAWA 社区 API 路由（排行榜 + 匹配 + 互助）
 """
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel, Field
 from typing import Optional
 from src.agent.leaderboard_agent import LeaderboardAgent
 from src.agent.match_agent import MatchAgent
 from src.agent.help_agent import HelpAgent
+from src.agent.guild_agent import GuildAgent
+from src.routes.auth import get_current_user
+from src.models.user import User
 
 router = APIRouter(prefix="/api/v1/community", tags=["社区"])
 leaderboard_agent = LeaderboardAgent()
 match_agent = MatchAgent()
 help_agent = HelpAgent()
+guild_agent = GuildAgent()
 
 
 # ── 请求模型 ──
@@ -187,4 +191,63 @@ async def get_help(request_id: str):
     result = await help_agent.run({"action": "detail", "request_id": request_id})
     if "error" in result:
         raise HTTPException(404, result["error"])
+    return result
+
+
+# ── 公会 ──
+@router.get("/guilds")
+async def list_guilds(language: str = "en", name: str = ""):
+    """获取公会列表"""
+    result = await guild_agent.run({"action": "list", "language": language, "name": name})
+    return result
+
+
+@router.get("/guild/my")
+async def my_guild(current_user: User = Depends(get_current_user)):
+    """获取我的公会"""
+    result = await guild_agent.run({"action": "my_guild", "user_id": str(current_user.id)})
+    return result
+
+
+@router.get("/guild/{guild_id}")
+async def guild_detail(guild_id: str):
+    """获取公会详情"""
+    result = await guild_agent.run({"action": "detail", "guild_id": guild_id})
+    return result
+
+
+@router.post("/guild/create")
+async def create_guild(req: dict, current_user: User = Depends(get_current_user)):
+    """创建公会"""
+    result = await guild_agent.run({
+        "action": "create",
+        "user_id": str(current_user.id),
+        "name": req.get("name", ""),
+        "language": req.get("language", "en"),
+        "description": req.get("description", ""),
+    })
+    if "error" in result:
+        raise HTTPException(400, result["error"])
+    return result
+
+
+@router.post("/guild/join")
+async def join_guild(req: dict, current_user: User = Depends(get_current_user)):
+    """加入公会"""
+    result = await guild_agent.run({
+        "action": "join",
+        "user_id": str(current_user.id),
+        "guild_id": req.get("guild_id", ""),
+    })
+    if "error" in result:
+        raise HTTPException(400, result["error"])
+    return result
+
+
+@router.post("/guild/leave")
+async def leave_guild(current_user: User = Depends(get_current_user)):
+    """离开公会"""
+    result = await guild_agent.run({"action": "leave", "user_id": str(current_user.id)})
+    if "error" in result:
+        raise HTTPException(400, result["error"])
     return result

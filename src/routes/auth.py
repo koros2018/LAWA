@@ -10,11 +10,12 @@ LAWA API 路由 - 认证模块
 """
 import hashlib
 import secrets
+import re
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from loguru import logger
@@ -35,6 +36,27 @@ class RegisterRequest(BaseModel):
     password: str
     native_lang: str  # zh | en
     learn_lang: str   # zh | en
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        if len(v) < 6:
+            raise ValueError("密码至少6个字符")
+        # 检查弱密码：纯数字、纯字母、连续字符
+        if re.match(r"^\d+$", v):
+            raise ValueError("密码不能全为数字")
+        if re.match(r"^[a-zA-Z]+$", v):
+            raise ValueError("密码不能全为字母")
+        if re.match(r"^(.)\1+$", v):
+            raise ValueError("密码不能全为相同字符")
+        return v
+
+    @field_validator("native_lang", "learn_lang")
+    @classmethod
+    def validate_lang(cls, v: str) -> str:
+        if v not in ("zh", "en"):
+            raise ValueError("语言必须是 zh 或 en")
+        return v
 
 
 class LoginRequest(BaseModel):

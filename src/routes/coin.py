@@ -1,4 +1,6 @@
 """
+from src.routes.auth import get_current_user
+from src.models.user import User
 LAWA 金币 API 路由
 
 端点：
@@ -51,9 +53,10 @@ async def get_rules():
 
 
 @router.get("/balance/{user_id}")
-async def get_balance(user_id: str, db: AsyncSession = Depends(get_db)):
+async def get_balance(user_id: str = None, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     """查询用户余额"""
-    return await coin_agent.run({"action": "get_balance", "user_id": user_id, "db": db})
+    uid = user_id or str(current_user.id)
+    return await coin_agent.run({"action": "get_balance", "user_id": uid, "db": db})
 
 
 @router.post("/register")
@@ -105,7 +108,7 @@ async def trade(req: TradeRequest, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/transactions/{user_id}")
-async def get_transactions(user_id: str, limit: int = Query(20, ge=1, le=100), db: AsyncSession = Depends(get_db)):
+async def get_transactions(user_id: str = None, limit: int = Query(20, ge=1, le=100), db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     """查询交易历史"""
     return await coin_agent.run({
         "action": "get_transactions",
@@ -116,7 +119,7 @@ async def get_transactions(user_id: str, limit: int = Query(20, ge=1, le=100), d
 
 
 @router.get("/daily/{user_id}")
-async def daily_summary(user_id: str, db: AsyncSession = Depends(get_db)):
+async def daily_summary(user_id: str = None, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     """当日金币汇总"""
     return await coin_agent.run({
         "action": "daily_summary",

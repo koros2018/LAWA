@@ -1,4 +1,6 @@
 """
+from src.routes.auth import get_current_user
+from src.models.user import User
 LAWA RPG 系统 API 路由
 
 涵盖：角色系统 + 世界地图 + 任务/副本 + 公会 + 商店/装备 + 成就 + 总架构师 + 文化活动
@@ -427,8 +429,8 @@ async def list_guilds(language: str = "en", name: str = ""):
     return result
 
 @router.get("/guild/my")
-async def my_guild(user_id: str):
-    result = await guild_agent.run({"action": "my_guild", "user_id": user_id})
+async def my_guild(current_user: User = Depends(get_current_user)):
+    result = await guild_agent.run({"action": "my_guild", "user_id": str(current_user.id)})
     return result
 
 @router.get("/guild/{guild_id}")
@@ -439,10 +441,10 @@ async def guild_detail(guild_id: str):
     return result
 
 @router.post("/guild/create")
-async def create_guild(req: CreateGuildRequest):
+async def create_guild(req: CreateGuildRequest, current_user: User = Depends(get_current_user)):
     result = await guild_agent.run({
         "action": "create",
-        "user_id": req.user_id,
+        "user_id": str(current_user.id),
         "name": req.name,
         "language": req.language,
         "description": req.description,
@@ -460,8 +462,8 @@ async def join_guild(req: JoinGuildRequest):
     return result
 
 @router.post("/guild/leave")
-async def leave_guild(user_id: str, guild_id: str = ""):
-    result = await guild_agent.run({"action": "leave", "user_id": user_id, "guild_id": guild_id})
+async def leave_guild(current_user: User = Depends(get_current_user), guild_id: str = ""):
+    result = await guild_agent.run({"action": "leave", "user_id": str(current_user.id), "guild_id": guild_id})
     if "error" in result:
         raise HTTPException(400, result["error"])
     return result

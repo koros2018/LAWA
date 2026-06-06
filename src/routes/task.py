@@ -16,6 +16,8 @@ from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel, Field
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
+from src.routes.auth import get_current_user
+from src.models.user import User
 from src.database import get_db
 from src.agent.task_agent import TaskAgent
 from src.services.task_scheduler import enforce_task_deadlines
@@ -26,7 +28,6 @@ task_agent = TaskAgent()
 
 # ── 请求模型 ──
 class PublishRequest(BaseModel):
-    publisher_id: str
     title: str = Field(..., min_length=1, max_length=200)
     description: str = ""
     task_type: str = "other"
@@ -103,11 +104,11 @@ async def get_task(task_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("")
-async def publish_task(req: PublishRequest, db: AsyncSession = Depends(get_db)):
+async def publish_task(req: PublishRequest, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     """发布任务"""
     result = await task_agent.run({
         "action": "publish",
-        "publisher_id": req.publisher_id,
+        "publisher_id": str(current_user.id),
         "title": req.title,
         "description": req.description,
         "task_type": req.task_type,
