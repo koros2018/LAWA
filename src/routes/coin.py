@@ -1,7 +1,7 @@
 """
+LAWA 金币 API 路由
 from src.routes.auth import get_current_user
 from src.models.user import User
-LAWA 金币 API 路由
 
 端点：
 - GET  /api/v1/coin/rules          — 获取金币规则
@@ -19,6 +19,8 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.database import get_db
 from src.agent.coin_agent import CoinAgent
+from src.routes.auth import get_current_user
+from src.models.user import User
 
 router = APIRouter(prefix="/api/v1/coin", tags=["金币系统"])
 coin_agent = CoinAgent()
@@ -52,11 +54,10 @@ async def get_rules():
     return await coin_agent.run({"action": "get_rules"})
 
 
-@router.get("/balance/{user_id}")
-async def get_balance(user_id: str = None, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
-    """查询用户余额"""
-    uid = user_id or str(current_user.id)
-    return await coin_agent.run({"action": "get_balance", "user_id": uid, "db": db})
+@router.get("/balance")
+async def get_balance(db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """查询当前用户余额"""
+    return await coin_agent.run({"action": "get_balance", "user_id": str(current_user.id), "db": db})
 
 
 @router.post("/register")
@@ -107,22 +108,22 @@ async def trade(req: TradeRequest, db: AsyncSession = Depends(get_db)):
     return result
 
 
-@router.get("/transactions/{user_id}")
-async def get_transactions(user_id: str = None, limit: int = Query(20, ge=1, le=100), db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
-    """查询交易历史"""
+@router.get("/transactions")
+async def get_transactions(limit: int = Query(20, ge=1, le=100), db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """查询当前用户交易历史"""
     return await coin_agent.run({
         "action": "get_transactions",
-        "user_id": user_id,
+        "user_id": str(current_user.id),
         "limit": limit,
         "db": db,
     })
 
 
-@router.get("/daily/{user_id}")
-async def daily_summary(user_id: str = None, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+@router.get("/daily")
+async def daily_summary(db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     """当日金币汇总"""
     return await coin_agent.run({
         "action": "daily_summary",
-        "user_id": user_id,
+        "user_id": str(current_user.id),
         "db": db,
     })

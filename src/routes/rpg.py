@@ -1,13 +1,13 @@
 """
-from src.routes.auth import get_current_user
-from src.models.user import User
 LAWA RPG 系统 API 路由
 
 涵盖：角色系统 + 世界地图 + 任务/副本 + 公会 + 商店/装备 + 成就 + 总架构师 + 文化活动
 共 49 端点，18 个 Agent
 """
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel, Field
+from src.routes.auth import get_current_user
+from src.models.user import User
 from typing import Optional
 from src.agent.character_agent import CharacterAgent, CHARACTER_CLASSES
 from src.agent.quest_agent import QuestAgent
