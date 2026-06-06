@@ -4,6 +4,8 @@ LAWA 社区 API 路由（排行榜 + 匹配 + 互助）
 from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel, Field
 from typing import Optional
+from sqlalchemy.ext.asyncio import AsyncSession
+from src.database import get_db
 from src.agent.leaderboard_agent import LeaderboardAgent
 from src.agent.match_agent import MatchAgent
 from src.agent.help_agent import HelpAgent
@@ -63,7 +65,7 @@ class AcceptHelpRequest(BaseModel):
 
 # ── 排行榜 ──
 @router.post("/leaderboard/record")
-async def record_score(req: RecordScoreRequest):
+async def record_score(req: RecordScoreRequest, db: AsyncSession = Depends(get_db)):
     return await leaderboard_agent.run({
         "action": "record",
         "user_id": req.user_id,
@@ -78,6 +80,7 @@ async def get_leaderboard(
     period: str = Query("daily", pattern="^(daily|weekly|all)$"),
     limit: int = Query(20, ge=1, le=100),
     user_id: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
 ):
     return await leaderboard_agent.run({
         "action": "get_board",
@@ -89,7 +92,7 @@ async def get_leaderboard(
 
 
 @router.get("/leaderboard/rank/{user_id}")
-async def get_rank(user_id: str):
+async def get_rank(user_id: str, db: AsyncSession = Depends(get_db)):
     return await leaderboard_agent.run({
         "action": "get_rank",
         "user_id": user_id,
@@ -98,7 +101,7 @@ async def get_rank(user_id: str):
 
 # ── 匹配 ──
 @router.post("/match/register")
-async def register_match_profile(req: RegisterProfileRequest):
+async def register_match_profile(req: RegisterProfileRequest, db: AsyncSession = Depends(get_db)):
     return await match_agent.run({
         "action": "register",
         "user_id": req.user_id,
@@ -112,7 +115,7 @@ async def register_match_profile(req: RegisterProfileRequest):
 
 
 @router.post("/match/find")
-async def find_partners(req: FindPartnersRequest):
+async def find_partners(req: FindPartnersRequest, db: AsyncSession = Depends(get_db)):
     return await match_agent.run({
         "action": "find_partners",
         "user_id": req.user_id,
@@ -121,7 +124,7 @@ async def find_partners(req: FindPartnersRequest):
 
 
 @router.post("/match/pair")
-async def match_pair(payload: dict):
+async def match_pair(payload: dict, db: AsyncSession = Depends(get_db)):
     return await match_agent.run({
         "action": "match",
         "user_a": payload.get("user_a"),

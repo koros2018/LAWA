@@ -7,9 +7,11 @@ LAWA 画像 + 规划 API 路由
 - POST /api/v1/plan/weekly          — 生成周计划
 - POST /api/v1/plan/daily           — 生成每日任务
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import Optional
+from sqlalchemy.ext.asyncio import AsyncSession
+from src.database import get_db
 from src.agent.persona_agent import PersonaAgent
 from src.agent.plan_agent import PlanAgent
 

@@ -12,9 +12,11 @@ LAWA 伴读 API 路由
 - POST /api/v1/companion/scenario/generate — LLM 动态生成个性化场景
 - POST /api/v1/companion/correct         — 单独纠错（不含对话）
 """
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel, Field
 from typing import Optional
+from sqlalchemy.ext.asyncio import AsyncSession
+from src.database import get_db
 from src.agent.companion_agent import CompanionAgent
 from src.services.correction import correction_engine
 

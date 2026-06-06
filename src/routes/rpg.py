@@ -145,14 +145,12 @@ async def set_title(req: SetTitleRequest):
 # ═══════════════════════════════════════
 #  世界地图
 # ═══════════════════════════════════════
-from src.database import AsyncSessionLocal
+from src.database import get_db
 from src.models.world import LanguageZone, ZoneNode, ZoneConnection
 from sqlalchemy import select
 
 @router.get("/world/zones")
-async def list_zones():
-    """获取所有语言区域"""
-    async with AsyncSessionLocal() as session:
+async def list_zones(db: AsyncSession = Depends(get_db)):
         result = await session.execute(select(LanguageZone))
         zones = result.scalars().all()
         return {
@@ -170,9 +168,7 @@ async def list_zones():
         }
 
 @router.get("/world/zones/{zone_code}")
-async def get_zone(zone_code: str):
-    """获取区域详情（含场景列表）"""
-    async with AsyncSessionLocal() as session:
+async def get_zone(zone_code: str, db: AsyncSession = Depends(get_db)):
         result = await session.execute(
             select(LanguageZone).where(LanguageZone.code == zone_code)
         )
@@ -212,9 +208,7 @@ async def get_zone(zone_code: str):
         }
 
 @router.get("/world/nodes")
-async def list_nodes(zone_code: Optional[str] = None):
-    """列出场景节点（可按区域筛选）"""
-    async with AsyncSessionLocal() as session:
+async def list_nodes(zone_code: Optional[str] = None, db: AsyncSession = Depends(get_db)):
         query = select(ZoneNode)
         if zone_code:
             zone_result = await session.execute(
@@ -356,9 +350,7 @@ async def generate_daily_quest_endpoint(req: QuestGenerateRequest):
 #  区域旅行
 # ═══════════════════════════════════════
 @router.post("/world/travel")
-async def travel_to_zone(req: TravelRequest):
-    """跨区域旅行"""
-    async with AsyncSessionLocal() as session:
+async def travel_to_zone(req: TravelRequest, db: AsyncSession = Depends(get_db)):
         # 查找目标区域
         result = await session.execute(
             select(LanguageZone).where(LanguageZone.code == req.target_zone_code)
