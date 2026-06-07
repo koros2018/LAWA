@@ -524,12 +524,14 @@ async def shop(category: str = "all"):
     return await item_agent.run({"action": "shop", "category": category})
 
 @router.get("/inventory")
-async def inventory(user_id: str):
-    return await item_agent.run({"action": "inventory", "user_id": user_id})
+async def inventory(current_user: User = Depends(get_current_user), user_id: Optional[str] = Query(None)):
+    uid = user_id or str(current_user.id)
+    return await item_agent.run({"action": "inventory", "user_id": uid})
 
 @router.get("/equipped")
-async def equipped(user_id: str):
-    return await item_agent.run({"action": "equipped", "user_id": user_id})
+async def equipped(current_user: User = Depends(get_current_user), user_id: Optional[str] = Query(None)):
+    uid = user_id or str(current_user.id)
+    return await item_agent.run({"action": "equipped", "user_id": uid})
 
 @router.post("/shop/buy")
 async def buy(req: BuyRequest):

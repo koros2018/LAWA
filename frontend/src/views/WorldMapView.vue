@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import api from '@/api'
+import { ElMessage } from 'element-plus'
 
 interface Zone {
   id: string
@@ -29,6 +30,7 @@ const selectedZone = ref<Zone | null>(null)
 const nodes = ref<ZoneNode[]>([])
 const selectedNode = ref<ZoneNode | null>(null)
 const loading = ref(true)
+const traveling = ref(false)
 
 const nodeTypeIcon: Record<string, string> = {
   academy: '🏫',
@@ -73,10 +75,20 @@ function selectNode(node: ZoneNode) {
 
 async function travel(zoneCode: string) {
   const u = JSON.parse(localStorage.getItem('lawa_user') || '{}')
+  const token = localStorage.getItem('lawa_token')
+  if (!u?.id || !token) {
+    ElMessage.warning('请先登录')
+    return
+  }
+  traveling.value = true
   try {
     await api.post('/rpg/world/travel', { user_id: u.id, target_zone_code: zoneCode })
-  } catch (e) {
-    console.error(e)
+    ElMessage.success(`🚀 已前往 ${zoneCode} 区域`)
+  } catch (e: any) {
+    const msg = e.response?.data?.detail || e.message || '未知错误'
+    ElMessage.error(`进入场景失败: ${msg}`)
+  } finally {
+    traveling.value = false
   }
 }
 </script>
@@ -99,7 +111,9 @@ async function travel(zoneCode: string) {
         </div>
         <div class="zone-theme">{{ zone.culture_theme }}</div>
         <div class="zone-lang">{{ zone.native_lang === 'zh' ? '中文区' : 'English Zone' }}</div>
-        <button class="travel-btn" @click.stop="travel(zone.code)">✈️ 前往</button>
+        <button class="travel-btn" :disabled="traveling" @click.stop="travel(zone.code)">
+          {{ traveling ? '✈️ 前往中...' : '✈️ 前往' }}
+        </button>
       </div>
     </div>
 
@@ -167,7 +181,9 @@ async function travel(zoneCode: string) {
         </ul>
       </div>
 
-      <button class="enter-btn" @click="travel(selectedZone!.code)">🚀 进入场景</button>
+      <button class="enter-btn" :disabled="traveling" @click="travel(selectedZone!.code)">
+        {{ traveling ? '🚀 前往中...' : '🚀 进入场景' }}
+      </button>
     </div>
   </div>
   <div v-else class="loading">加载中...</div>

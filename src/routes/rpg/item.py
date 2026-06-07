@@ -1,7 +1,10 @@
 """道具商店 & 装备系统路由"""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Query
 from pydantic import BaseModel
 from src.agent.item_agent import ItemAgent
+from src.routes.auth import get_current_user
+from src.models.user import User
+from typing import Optional
 
 router = APIRouter(prefix="/shop", tags=["RPG-Item"])
 item_agent = ItemAgent()
@@ -36,15 +39,17 @@ async def shop(category: str = "all"):
 
 
 @router.get("/inventory")
-async def inventory(user_id: str):
+async def inventory(user_id: Optional[str] = Query(None), current_user: User = Depends(get_current_user)):
     """背包"""
-    return await item_agent.run({"action": "inventory", "user_id": user_id})
+    uid = user_id or str(current_user.id)
+    return await item_agent.run({"action": "inventory", "user_id": uid})
 
 
 @router.get("/equipped")
-async def equipped(user_id: str):
+async def equipped(user_id: Optional[str] = Query(None), current_user: User = Depends(get_current_user)):
     """已装备"""
-    return await item_agent.run({"action": "equipped", "user_id": user_id})
+    uid = user_id or str(current_user.id)
+    return await item_agent.run({"action": "equipped", "user_id": uid})
 
 
 @router.post("/buy")
