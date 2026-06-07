@@ -10,10 +10,8 @@ from loguru import logger
 from sqlalchemy import select, update
 from src.agent.base_agent import BaseAgent
 from src.database import AsyncSessionLocal
-from src.database.session import get_async_session
+
 from src.models.user import LawaProfile
-
-
 # ── 等级公式 ──
 def xp_to_level(xp: int) -> int:
     """level = floor(sqrt(xp / 100)) + 1, max 100"""
@@ -23,8 +21,6 @@ def xp_to_level(xp: int) -> int:
 def xp_for_level(level: int) -> int:
     """到达某等级所需的最小XP"""
     return 100 * (level - 1) ** 2
-
-
 # ── 职业定义 ──
 CHARACTER_CLASSES = {
     "entrepreneur": {"name": "创业者", "desc": "翻译/转换/资源整合", "bonus": "互助任务 +20%"},
@@ -47,8 +43,6 @@ XP_SOURCES = {
 
 # ── 每日XP上限 ──
 DAILY_XP_CAP = 500
-
-
 class CharacterAgent(BaseAgent):
     """角色成长Agent"""
 
@@ -76,7 +70,7 @@ class CharacterAgent(BaseAgent):
     # ── 获取角色面板 ──
     async def get_profile(self, payload: dict) -> dict:
         user_id = payload["user_id"]
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             result = await session.execute(
                 select(LawaProfile).where(LawaProfile.user_id == user_id)
             )
@@ -100,7 +94,7 @@ class CharacterAgent(BaseAgent):
     # ── 获取XP ──
     async def get_xp(self, payload: dict) -> dict:
         user_id = payload["user_id"]
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             result = await session.execute(
                 select(LawaProfile.xp, LawaProfile.level).where(LawaProfile.user_id == user_id)
             )
@@ -122,7 +116,7 @@ class CharacterAgent(BaseAgent):
         source = payload.get("source", "study_10min")
         amount = payload.get("amount", XP_SOURCES.get(source, 5))
         
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             result = await session.execute(
                 select(LawaProfile).where(LawaProfile.user_id == user_id)
             )
@@ -175,7 +169,7 @@ class CharacterAgent(BaseAgent):
         if class_key not in CHARACTER_CLASSES:
             return {"error": f"无效职业: {class_key}", "available": list(CHARACTER_CLASSES.keys())}
         
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             result = await session.execute(
                 select(LawaProfile).where(LawaProfile.user_id == user_id)
             )
@@ -203,7 +197,7 @@ class CharacterAgent(BaseAgent):
         if skill not in valid_skills:
             return {"error": f"无效技能: {skill}", "available": valid_skills}
         
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             result = await session.execute(
                 select(LawaProfile).where(LawaProfile.user_id == user_id)
             )
@@ -242,7 +236,7 @@ class CharacterAgent(BaseAgent):
         user_id = payload["user_id"]
         title = payload.get("title", "")
         
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             result = await session.execute(
                 select(LawaProfile).where(LawaProfile.user_id == user_id)
             )
@@ -259,7 +253,7 @@ class CharacterAgent(BaseAgent):
     # ── 获取统计 ──
     async def get_stats(self, payload: dict) -> dict:
         user_id = payload["user_id"]
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             result = await session.execute(
                 select(LawaProfile).where(LawaProfile.user_id == user_id)
             )

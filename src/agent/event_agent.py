@@ -9,14 +9,12 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import select, and_
 from src.database import AsyncSessionLocal
-from src.database.session import get_async_session
+
 from src.models.event import CulturalEvent, UserEvent, SEED_EVENTS
 from src.agent.base_agent import BaseAgent
 from src.services.llm_service import llm_service
 
 logger = logging.getLogger(__name__)
-
-
 class EventAgent(BaseAgent):
     def __init__(self):
         super().__init__(name="EventAgent")
@@ -50,7 +48,7 @@ class EventAgent(BaseAgent):
         zone_code = payload.get("zone_code")
         user_id = payload.get("user_id")
 
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             await self._seed_events(session)
 
             query = select(CulturalEvent).where(CulturalEvent.is_active == True)
@@ -118,7 +116,7 @@ class EventAgent(BaseAgent):
         event_code = payload.get("code")
         user_id = payload.get("user_id")
 
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             await self._seed_events(session)
 
             result = await session.execute(
@@ -167,7 +165,7 @@ class EventAgent(BaseAgent):
         user_id = payload["user_id"]
         event_code = payload["code"]
 
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             await self._seed_events(session)
 
             # 找活动
@@ -232,7 +230,7 @@ class EventAgent(BaseAgent):
         task_index = payload.get("task_index")  # 指定任务序号
         progress_value = payload.get("value", 1)
 
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             # 找活动
             event_result = await session.execute(
                 select(CulturalEvent).where(CulturalEvent.code == event_code)
@@ -327,7 +325,7 @@ class EventAgent(BaseAgent):
 
     async def my_events(self, payload: dict) -> dict:
         user_id = payload["user_id"]
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             ue_result = await session.execute(
                 select(UserEvent).where(UserEvent.user_id == user_id)
             )
@@ -441,7 +439,7 @@ Make it fun, educational, and culturally rich. Draw from real cultural tradition
             return {"error": "活动生成失败", "raw": event_data}
 
         # 写入 DB
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             event = CulturalEvent(
                 code=event_data.get("code", f"gen-{uuid.uuid4().hex[:8]}"),
                 name=event_data.get("name", "Generated Event"),
@@ -496,7 +494,7 @@ Make it fun, educational, and culturally rich. Draw from real cultural tradition
 
         lang_name = "English" if lang == "en" else "中文"
 
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             await self._seed_events(session)
             result = await session.execute(
                 select(CulturalEvent).where(CulturalEvent.code == event_code)

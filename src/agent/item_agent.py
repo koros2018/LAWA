@@ -7,8 +7,6 @@ import logging
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import select, and_
 from src.database import AsyncSessionLocal
-from src.database.session import get_async_session
-from src.database.session import get_async_session
 from src.models.equipment import (
     Equipment, Consumable, UserInventory, CraftRecipe, RARITY_CONFIG,
 )
@@ -17,8 +15,6 @@ from src.models.coin import CoinTransaction
 from src.agent.base_agent import BaseAgent
 
 logger = logging.getLogger(__name__)
-
-
 class ItemAgent(BaseAgent):
     def __init__(self):
         super().__init__(name="ItemAgent")
@@ -51,7 +47,7 @@ class ItemAgent(BaseAgent):
     async def shop(self, payload: dict) -> dict:
         """列出商店可购买物品"""
         category = payload.get("category", "all")  # all/equipment/consumable
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             items = []
 
             if category in ("all", "equipment"):
@@ -84,7 +80,7 @@ class ItemAgent(BaseAgent):
 
     async def inventory(self, payload: dict) -> dict:
         user_id = payload["user_id"]
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             result = await session.execute(
                 select(UserInventory).where(UserInventory.user_id == user_id)
                 .order_by(UserInventory.equipped.desc(), UserInventory.acquired_at.desc())
@@ -121,7 +117,7 @@ class ItemAgent(BaseAgent):
 
     async def equipped(self, payload: dict) -> dict:
         user_id = payload["user_id"]
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             result = await session.execute(
                 select(UserInventory).where(
                     and_(UserInventory.user_id == user_id, UserInventory.equipped == 1)
@@ -156,7 +152,7 @@ class ItemAgent(BaseAgent):
         item_id = payload["item_id"]
         quantity = payload.get("quantity", 1)
 
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             profile = await self._get_profile(session, user_id)
             if not profile:
                 return {"error": "用户画像不存在"}
@@ -204,7 +200,7 @@ class ItemAgent(BaseAgent):
         user_id = payload["user_id"]
         inv_id = payload["inv_id"]
 
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             inv = await session.get(UserInventory, inv_id)
             if not inv or inv.user_id != user_id:
                 return {"error": "物品不在背包中"}
@@ -240,7 +236,7 @@ class ItemAgent(BaseAgent):
         user_id = payload["user_id"]
         inv_id = payload["inv_id"]
 
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             inv = await session.get(UserInventory, inv_id)
             if not inv or inv.user_id != user_id:
                 return {"error": "物品不在背包中"}
@@ -288,7 +284,7 @@ class ItemAgent(BaseAgent):
 
     async def recipes(self, payload: dict) -> dict:
         """列出合成配方"""
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             result = await session.execute(select(CraftRecipe))
             recipes = result.scalars().all()
             return {
@@ -305,7 +301,7 @@ class ItemAgent(BaseAgent):
         user_id = payload["user_id"]
         recipe_id = payload["recipe_id"]
 
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             recipe = await session.get(CraftRecipe, recipe_id)
             if not recipe:
                 return {"error": "配方不存在"}

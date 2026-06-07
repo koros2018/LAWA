@@ -49,6 +49,10 @@ class RegisterRequest(BaseModel):
             raise ValueError("密码不能全为字母")
         if re.match(r"^(.)\1+$", v):
             raise ValueError("密码不能全为相同字符")
+        # 常见弱密码黑名单
+        weak = {"password", "123456", "qwerty", "abc123", "passw0rd", "admin123", "letmein", "welcome", "monkey", "dragon", "master"}
+        if v.lower() in weak:
+            raise ValueError("密码强度过低，请使用更复杂的密码")
         return v
 
     @field_validator("native_lang", "learn_lang")

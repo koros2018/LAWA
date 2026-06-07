@@ -199,28 +199,28 @@ async def get_help(request_id: str):
 
 # ── 公会 ──
 @router.get("/guilds")
-async def list_guilds(language: str = "en", name: str = ""):
+async def list_guilds(language: str = "en", name: str = "", db: AsyncSession = Depends(get_db)):
     """获取公会列表"""
-    result = await guild_agent.run({"action": "list", "language": language, "name": name})
+    result = await guild_agent.run({"action": "list", "language": language, "name": name, "db": db})
     return result
 
 
 @router.get("/guild/my")
-async def my_guild(current_user: User = Depends(get_current_user)):
+async def my_guild(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """获取我的公会"""
-    result = await guild_agent.run({"action": "my_guild", "user_id": str(current_user.id)})
+    result = await guild_agent.run({"action": "my_guild", "user_id": str(current_user.id), "db": db})
     return result
 
 
 @router.get("/guild/{guild_id}")
-async def guild_detail(guild_id: str):
+async def guild_detail(guild_id: str, db: AsyncSession = Depends(get_db)):
     """获取公会详情"""
-    result = await guild_agent.run({"action": "detail", "guild_id": guild_id})
+    result = await guild_agent.run({"action": "detail", "guild_id": guild_id, "db": db})
     return result
 
 
 @router.post("/guild/create")
-async def create_guild(req: dict, current_user: User = Depends(get_current_user)):
+async def create_guild(req: dict, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """创建公会"""
     result = await guild_agent.run({
         "action": "create",
@@ -228,6 +228,7 @@ async def create_guild(req: dict, current_user: User = Depends(get_current_user)
         "name": req.get("name", ""),
         "language": req.get("language", "en"),
         "description": req.get("description", ""),
+        "db": db,
     })
     if "error" in result:
         raise HTTPException(400, result["error"])
@@ -235,12 +236,13 @@ async def create_guild(req: dict, current_user: User = Depends(get_current_user)
 
 
 @router.post("/guild/join")
-async def join_guild(req: dict, current_user: User = Depends(get_current_user)):
+async def join_guild(req: dict, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """加入公会"""
     result = await guild_agent.run({
         "action": "join",
         "user_id": str(current_user.id),
         "guild_id": req.get("guild_id", ""),
+        "db": db,
     })
     if "error" in result:
         raise HTTPException(400, result["error"])
@@ -248,9 +250,9 @@ async def join_guild(req: dict, current_user: User = Depends(get_current_user)):
 
 
 @router.post("/guild/leave")
-async def leave_guild(current_user: User = Depends(get_current_user)):
+async def leave_guild(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """离开公会"""
-    result = await guild_agent.run({"action": "leave", "user_id": str(current_user.id)})
+    result = await guild_agent.run({"action": "leave", "user_id": str(current_user.id), "db": db})
     if "error" in result:
         raise HTTPException(400, result["error"])
     return result

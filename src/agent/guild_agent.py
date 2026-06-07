@@ -5,12 +5,22 @@ GuildAgent —— 公会系统核心
 """
 import logging
 from datetime import datetime, timezone
+from contextlib import asynccontextmanager
 from sqlalchemy import select, and_, func, update
 from src.database import AsyncSessionLocal
-from src.database.session import get_async_session
 from src.models.guild import LanguageGuild, GuildMember, GuildTask, get_guild_level_config
 from src.models.user import LawaProfile
 from src.models.quest import QuestTemplate
+
+
+@asynccontextmanager
+async def _get_db(payload: dict):
+    """优先使用 payload 中的 db，否则自建会话"""
+    if payload.get("db"):
+        yield payload["db"]
+    else:
+        async with AsyncSessionLocal() as session:
+            yield session
 from src.agent.base_agent import BaseAgent
 
 logger = logging.getLogger(__name__)
@@ -50,7 +60,7 @@ class GuildAgent(BaseAgent):
 
     async def list_guilds(self, payload: dict) -> dict:
         language = payload.get("language", "en")
-        async with get_async_session() as session:
+        async with _get_db(payload) as session:
             query = select(LanguageGuild).where(LanguageGuild.language == language)
             if payload.get("name"):
                 query = query.where(LanguageGuild.name.ilike(f"%{payload['name']}%"))
@@ -78,7 +88,7 @@ class GuildAgent(BaseAgent):
 
     async def my_guild(self, payload: dict) -> dict:
         user_id = payload["user_id"]
-        async with get_async_session() as session:
+        async with _get_db(payload) as session:
             m_result = await session.execute(
                 select(GuildMember).where(GuildMember.user_id == user_id)
             )
@@ -110,7 +120,7 @@ class GuildAgent(BaseAgent):
         description = payload.get("description", "")
         emblem = payload.get("emblem", "🛡️")
 
-        async with get_async_session() as session:
+        async with _get_db(payload) as session:
             # 检查用户是否已在公会（允许加入多个公会，只需不在目标公会中）
             existing = await session.execute(
                 select(GuildMember).where(GuildMember.user_id == user_id)
@@ -169,7 +179,7 @@ class GuildAgent(BaseAgent):
         user_id = payload["user_id"]
         guild_id = payload["guild_id"]
 
-        async with get_async_session() as session:
+        async with _get_db(payload) as session:
             # 检查是否已在目标公会中
             existing = await session.execute(
                 select(GuildMember).where(
@@ -206,7 +216,7 @@ class GuildAgent(BaseAgent):
     async def leave_guild(self, payload: dict) -> dict:
         user_id = payload["user_id"]
         guild_id = payload.get("guild_id")  # 可选：指定退出哪个
-        async with get_async_session() as session:
+        async with _get_db(payload) as session:
             member_result = await session.execute(
                 select(GuildMember).where(GuildMember.user_id == user_id)
             )
@@ -236,7 +246,7 @@ class GuildAgent(BaseAgent):
 
     async def guild_detail(self, payload: dict) -> dict:
         guild_id = payload["guild_id"]
-        async with get_async_session() as session:
+        async with _get_db(payload) as session:
             guild = await session.get(LanguageGuild, guild_id)
             if not guild:
                 return {"error": "公会不存在"}
@@ -251,7 +261,7 @@ class GuildAgent(BaseAgent):
         amount = payload.get("amount", 10)
         source = payload.get("source", "study")
 
-        async with get_async_session() as session:
+        async with _get_db(payload) as session:
             member_result = await session.execute(
                 select(GuildMember).where(GuildMember.user_id == user_id)
             )
@@ -296,7 +306,7 @@ class GuildAgent(BaseAgent):
 
     async def guild_tasks(self, payload: dict) -> dict:
         guild_id = payload["guild_id"]
-        async with get_async_session() as session:
+        async with _get_db(payload) as session:
             result = await session.execute(
                 select(GuildTask).where(
                     and_(GuildTask.guild_id == guild_id, GuildTask.status == "active")
@@ -328,7 +338,7 @@ class GuildAgent(BaseAgent):
         task_id = payload["task_id"]
         value = payload.get("value", 1)
 
-        async with get_async_session() as session:
+        async with _get_db(payload) as session:
             task = await session.get(GuildTask, task_id)
             if not task or str(task.guild_id) != guild_id:
                 return {"error": "公会任务不存在"}

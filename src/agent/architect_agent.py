@@ -8,13 +8,11 @@ import re
 import logging
 from datetime import datetime, timezone
 from sqlalchemy import text, select, func
-from src.database.main import AsyncSessionLocal
-from src.database.session import get_async_session, Base
+from src.database.main import AsyncSessionLocal, Base
+
 from src.agent.base_agent import BaseAgent
 
 logger = logging.getLogger(__name__)
-
-
 class ArchitectAgent(BaseAgent):
     """系统总架构师 —— 监督/优化/进化"""
 
@@ -51,7 +49,7 @@ class ArchitectAgent(BaseAgent):
 
         # 1. 数据库连接
         try:
-            async with get_async_session() as session:
+            async with AsyncSessionLocal() as session:
                 await session.execute(text("SELECT 1"))
             checks["database"] = "✅ 正常"
         except Exception as e:
@@ -60,7 +58,7 @@ class ArchitectAgent(BaseAgent):
 
         # 2. 表完整性
         try:
-            async with get_async_session() as session:
+            async with AsyncSessionLocal() as session:
                 result = await session.execute(text(
                     "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
                 ))
@@ -85,7 +83,7 @@ class ArchitectAgent(BaseAgent):
         # 3. 各表行数
         table_rows = {}
         try:
-            async with get_async_session() as session:
+            async with AsyncSessionLocal() as session:
                 for table_name in sorted(Base.metadata.tables.keys()):
                     try:
                         result = await session.execute(text(f"SELECT COUNT(*) FROM {table_name}"))
@@ -122,7 +120,7 @@ class ArchitectAgent(BaseAgent):
     async def dashboard(self, payload: dict) -> dict:
         """聚合各子系统的关键数据"""
         stats = {}
-        async with get_async_session() as session:
+        async with AsyncSessionLocal() as session:
             # 用户
             stats["users"] = await self._count(session, "users")
             stats["profiles"] = await self._count(session, "lawa_profiles")
