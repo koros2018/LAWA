@@ -11,6 +11,23 @@ from src.database.main import AsyncSessionLocal, init_db
 from src.models.world import LanguageZone, ZoneNode, ZoneConnection
 from src.models.quest import QuestTemplate
 from src.models.user import LawaProfile
+from src.models.equipment import CraftRecipe, Consumable, Equipment
+from src.models.coin import CoinTransaction
+
+
+# ── UUID 常量（用于配方引用）─
+# 装备ID
+EQ_MAGIC_DICT = uuid.UUID("0361cddc-0c4e-4afe-9cf7-2161e33bb5c1")
+EQ_TIME_GLASS = uuid.UUID("0ed20d53-3333-4c20-8395-13b8494b8bab")
+EQ_TRANSLATOR_EYE = uuid.UUID("c2e1652e-8690-4c74-9dd2-b0e3aefb7338")
+EQ_SCHOLAR_ROBE = uuid.UUID("30f18519-8ed7-4e81-a891-5960843abc2c")
+EQ_QUILL_OF_TRUTH = uuid.UUID("c7dc66ce-09a8-48fd-9974-6ee7328c101f")
+# 消耗品ID
+CO_XP_POTION = uuid.UUID("3f5d1ba8-31bd-4dc3-84c2-bc2ffea0f9d8")
+CO_DOUBLE_COIN_CARD = uuid.UUID("e69adac0-d544-4738-935e-0d87521d4369")
+CO_RETRY_SCROLL = uuid.UUID("a4519051-aa03-4e74-8649-5ac5948453f6")
+CO_SPEED_TEA = uuid.UUID("56573a96-0a5d-471f-a66d-d4380cd3fee1")
+CO_XP_ELIXIR = uuid.UUID("5300c3bf-8d38-47ed-8e57-0b0ed9b9ad8a")
 
 
 # ── 华夏区 ID ──
