@@ -30,7 +30,7 @@ async function refresh() {
   try {
     const [s, i, e] = await Promise.all([
       api.get('/rpg/shop'), api.get(`/rpg/inventory?user_id=${userId.value}`),
-      api.get(`/rpg/equipped?user_id=${userId.value}`),
+      api.get(`/rpg/inventory/equipped?user_id=${userId.value}`),
     ])
     shopItems.value = s.data.items; inventory.value = i.data.items; equipped.value = e.data
   } catch {}
@@ -38,7 +38,7 @@ async function refresh() {
 
 async function buy(item: ShopItem) {
   try {
-    await api.post('/rpg/shop/buy', { user_id: userId.value, item_type: item.type, item_id: item.id })
+    await api.post('/rpg/shop/buy', { user_id: userId.value, item_type: item.type, item_id: item.id, quantity: 1 })
     await refresh()
   } catch (e: any) { message.value = e.response?.data?.detail || '购买失败' }
 }

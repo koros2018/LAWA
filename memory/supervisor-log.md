@@ -475,3 +475,29 @@ FAILED tests/test_config.py::TestSettingsDefaults::test_llm_defaults
 - 数据库表从 41 增至 42（新增 1 张）
 - Agent 从 18 增至 19
 - 无异常，状态健康 🦝
+
+---
+
+## 2026-06-10 13:01 CST
+
+### 巡检结果
+
+| 检查项 | 状态 | 详情 |
+|--------|------|------|
+| 后端服务 (6288) | ✅ 正常 | HTTP 200 |
+| 前端服务 (6289) | ✅ 正常 | HTTP 200 |
+| pytest | ✅ 全绿 | 86 passed, 16 skipped, 11.13s |
+| TODO/FIXME | 🟢 稳定 | 仅 architect_agent 自检代码含 TODO 引用，无业务堆积 |
+| 未提交变更 | ⚠️ 2个文件 | `ShopView.vue` 微调 + `rpg.py` 删除 77 行（非核心路由） |
+
+### 近期提交 (最近5个)
+- `chore: seed_rpg.py 装备/金币种子数据补充`
+- `feat: 前端引入 element-plus + seed_rpg 装备/金币模型引用`
+- `fix: 前端进入场景按钮无响应 + 背包/已装备自动获取用户ID`
+- `fix: 修复公会Agent递归死循环 + 社区路由注入DB会话`
+- `refactor: Agent层 AsyncSessionLocal() → get_async_session() 统一会话管理`
+
+### 备注
+- 🏆 **全系统绿灯**：后端+前端+测试 三联绿
+- 📁 有2个文件已修改未提交，`rpg.py` 删除较多（77行），需留意是否误删
+- 🦝 系统健康，无需干预
