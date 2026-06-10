@@ -45,9 +45,27 @@ function logout() {
         <router-link to="/dashboard" class="logo">🦝 LAWA</router-link>
       </div>
       <nav class="sidebar-nav">
+        <div class="nav-group-label">📊 概览</div>
         <router-link to="/dashboard" class="nav-item"><span>📊</span> <span>Dashboard</span></router-link>
-        <router-link to="/world" class="nav-item"><span>🌍</span> <span>World</span></router-link>
-        <router-link to="/tasks" class="nav-item"><span>📋</span> <span>Tasks</span></router-link>
+        <router-link to="/profile" class="nav-item"><span>👤</span> <span>画像</span></router-link>
+        <router-link to="/leaderboard" class="nav-item"><span>🏅</span> <span>排行</span></router-link>
+
+        <div class="nav-group-label">🎮 游戏</div>
+        <router-link to="/world" class="nav-item"><span>🌍</span> <span>世界地图</span></router-link>
+        <router-link to="/shop" class="nav-item"><span>🏪</span> <span>商店</span></router-link>
+        <router-link to="/achievements" class="nav-item"><span>🏆</span> <span>成就</span></router-link>
+        <router-link to="/events" class="nav-item"><span>🎉</span> <span>活动</span></router-link>
+        <router-link to="/guild" class="nav-item"><span>⚔️</span> <span>公会</span></router-link>
+
+        <div class="nav-group-label">📝 学习</div>
+        <router-link to="/assessment" class="nav-item"><span>📝</span> <span>评估</span></router-link>
+        <router-link to="/tasks" class="nav-item"><span>📋</span> <span>任务</span></router-link>
+        <router-link to="/tutor" class="nav-item"><span>🧙</span> <span>导师</span></router-link>
+        <router-link to="/match" class="nav-item"><span>🤝</span> <span>匹配</span></router-link>
+        <router-link to="/companion" class="nav-item"><span>👥</span> <span>学伴</span></router-link>
+        <router-link to="/plan" class="nav-item"><span>📅</span> <span>学习计划</span></router-link>
+
+        <div class="nav-group-label">⚙️ 设置</div>
         <router-link to="/llm-config" class="nav-item"><span>🤖</span> <span>LLM</span></router-link>
       </nav>
       <div class="sidebar-footer" v-if="user">
@@ -86,6 +104,7 @@ body { font-family: -apple-system, sans-serif; background: #f5f7fa; color: #333;
 .sidebar-nav { flex: 1; }
 .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-radius: 8px; color: #555; text-decoration: none; font-size: 0.9rem; transition: background 0.2s; margin-bottom: 4px; }
 .nav-item:hover, .nav-item.router-link-active { background: #f0f0ff; color: var(--primary); }
+.nav-group-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 8px 4px; font-weight: 600; }
 .sidebar-footer { padding: 12px 0 0; border-top: 1px solid #f0f0f0; display: flex; flex-direction: column; gap: 8px; }
 .user-info { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; }
 .user-avatar { font-size: 1.1rem; }
