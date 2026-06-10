@@ -24,6 +24,17 @@ async def lifespan(app: FastAPI):
     await init_db()
     logger.info("✅ 数据库连接成功")
 
+    # LLM Provider 健康检查（异步，不阻塞启动）
+    from src.services.llm_service import llm_service
+    try:
+        health_result = await llm_service.health_check_all()
+        if not health_result["healthy_count"] == health_result["total"]:
+            for p in health_result["providers"]:
+                if not p["healthy"]:
+                    logger.warning(f"⚠️ LLM Provider 不可用: {p['provider']} — {p['error']}")
+    except Exception as e:
+        logger.error(f"LLM 健康检查异常: {e}")
+
     yield
 
     # 关闭时清理
@@ -78,3 +89,14 @@ async def api_health():
         "version": settings.app_version,
         "database": settings.db_name,
     }
+
+
+@app.get("/api/v1/health/llm")
+async def llm_health():
+    """LLM Provider 运行时健康检查"""
+    from src.services.llm_service import llm_service
+    try:
+        result = await llm_service.health_check_all()
+        return result
+    except Exception as e:
+        return {"status": "error", "error": str(e)}

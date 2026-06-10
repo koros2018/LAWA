@@ -78,7 +78,9 @@ class AchievementAgent(BaseAgent):
                     "hidden": bool(a.hidden) and (not ua or not ua.completed),
                 })
 
-            return {"achievements": items, "count": len(items), "completed": sum(1 for i in items if i["completed"])}
+            completed_count = sum(1 for i in items if i["completed"])
+            logger.info(f"成就列表: 共{len(items)}项, 已完成{completed_count}")
+            return {"achievements": items, "count": len(items), "completed": completed_count}
 
     # ── 我的成就 ──
 
@@ -221,6 +223,8 @@ class AchievementAgent(BaseAgent):
         for a in ALL_ACHIEVEMENTS:
             session.add(Achievement(**a))
         await session.commit()
+        logger.info(f"成就种子数据已初始化: {len(ALL_ACHIEVEMENTS)} 项")
+
 
     async def _get_profile(self, session, user_id):
         result = await session.execute(

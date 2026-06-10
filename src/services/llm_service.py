@@ -340,6 +340,64 @@ class LLMService:
                 return p
         return None
 
+    # ── 启动健康检查 ──
+    async def health_check(self, provider: Optional[str] = None) -> dict:
+        """检查指定（或默认）Provider的健康状态
+
+        发送一条简短测试消息，按响应判活。
+        返回: {"provider": str, "healthy": bool, "latency_ms": int, "error": str | None}
+        """
+        provider = provider or self.default_provider
+        if provider not in self._clients:
+            return {"provider": provider, "healthy": False, "latency_ms": 0, "error": "not_configured"}
+
+        start = time.time()
+        try:
+            msg = [{"role": "user", "content": "Reply with one word: OK"}]
+            model = self._get_model(provider)
+            client = self._get_client(provider)
+            response = await asyncio.wait_for(
+                client.chat.completions.create(
+                    model=model,
+                    messages=msg,
+                    temperature=0.1,
+                    max_tokens=5,
+                ),
+                timeout=settings.llm_timeout_seconds,
+            )
+            content = response.choices[0].message.content or ""
+            latency = int((time.time() - start) * 1000)
+            healthy = True
+            logger.info(f"✅ LLM健康检查 [{provider}] {model} | {latency}ms")
+            return {"provider": provider, "healthy": True, "latency_ms": latency, "error": None}
+        except Exception as e:
+            latency = int((time.time() - start) * 1000)
+            logger.warning(f"❌ LLM健康检查 [{provider}] 失败: {e} ({latency}ms)")
+            return {"provider": provider, "healthy": False, "latency_ms": latency, "error": str(e)}
+
+    async def health_check_all(self) -> dict:
+        """并行检查所有已配置的Provider"""
+        tasks = [self.health_check(p) for p in list(self._clients.keys())]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        status_list = []
+        for i, r in enumerate(results):
+            if isinstance(r, Exception):
+                status_list.append({
+                    "provider": list(self._clients.keys())[i],
+                    "healthy": False,
+                    "latency_ms": 0,
+                    "error": str(r),
+                })
+            else:
+                status_list.append(r)
+
+        all_healthy = all(s["healthy"] for s in status_list)
+        healthy_count = sum(1 for s in status_list if s["healthy"])
+        total = len(status_list)
+        status = "✅ 全部健康" if all_healthy else f"⚠️ {healthy_count}/{total} 正常"
+        logger.info(f"🦝 LLM健康检查汇总: {status}")
+        return {"status": status, "providers": status_list, "healthy_count": healthy_count, "total": total}
+
 
 # 全局单例
 llm_service = LLMService()
