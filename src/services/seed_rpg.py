@@ -271,6 +271,189 @@ ZONE_CONNECTIONS = [
 
 
 # ═══════════════════════════════════════════════
+#  装备
+# ═══════════════════════════════════════════════
+EQUIPMENTS = [
+    {
+        "id": str(EQ_MAGIC_DICT),
+        "code": "magic-dict",
+        "name": "魔法词典",
+        "emoji": "📖",
+        "description": "自动查询生词，阅读速度+25%",
+        "slot": "weapon",
+        "rarity": "epic",
+        "price_coin": 500,
+        "price_guild_contrib": 0,
+        "effects": {"reading_speed_bonus": 25, "auto_lookup": True},
+        "required_level": 5,
+    },
+    {
+        "id": str(EQ_TIME_GLASS),
+        "code": "time-glass",
+        "name": "时光沙漏",
+        "emoji": "⏳",
+        "description": "学习时段效果+30%，持续15分钟",
+        "slot": "accessory",
+        "rarity": "legendary",
+        "price_coin": 1200,
+        "price_guild_contrib": 300,
+        "effects": {"xp_multiplier": 1.3, "duration_min": 15},
+        "required_level": 10,
+    },
+    {
+        "id": str(EQ_TRANSLATOR_EYE),
+        "code": "translator-eye",
+        "name": "翻译之眼",
+        "emoji": "👁️",
+        "description": "实时翻译字幕，听力理解+20%",
+        "slot": "head",
+        "rarity": "rare",
+        "price_coin": 300,
+        "price_guild_contrib": 100,
+        "effects": {"listening_bonus": 20},
+        "required_level": 3,
+    },
+    {
+        "id": str(EQ_SCHOLAR_ROBE),
+        "code": "scholar-robe",
+        "name": "学士长袍",
+        "emoji": "🧙",
+        "description": "纠错准确率+15%，装备耐久+1",
+        "slot": "armor",
+        "rarity": "uncommon",
+        "price_coin": 150,
+        "price_guild_contrib": 0,
+        "effects": {"accuracy_bonus": 15},
+        "required_level": 1,
+    },
+    {
+        "id": str(EQ_QUILL_OF_TRUTH),
+        "code": "quill-of-truth",
+        "name": "真言之羽",
+        "emoji": "🪶",
+        "description": "写作评分+10%，语法建议更精准",
+        "slot": "weapon",
+        "rarity": "epic",
+        "price_coin": 800,
+        "price_guild_contrib": 200,
+        "effects": {"writing_score_bonus": 10, "grammar_suggestions": True},
+        "required_level": 7,
+    },
+]
+
+
+# ═══════════════════════════════════════════════
+#  消耗品
+# ═══════════════════════════════════════════════
+CONSUMABLES = [
+    {
+        "id": str(CO_XP_POTION),
+        "code": "xp-potion",
+        "name": "经验药水",
+        "emoji": "🧪",
+        "description": "下次任务经验+50%",
+        "price_coin": 100,
+        "effect_type": "xp_boost",
+        "effect_value": 50,
+        "effect_duration_min": 30,
+    },
+    {
+        "id": str(CO_DOUBLE_COIN_CARD),
+        "code": "double-coin-card",
+        "name": "双倍金币卡",
+        "emoji": "💳",
+        "description": "30分钟内所有任务金币翻倍",
+        "price_coin": 200,
+        "effect_type": "coin_double",
+        "effect_value": 100,
+        "effect_duration_min": 30,
+    },
+    {
+        "id": str(CO_RETRY_SCROLL),
+        "code": "retry-scroll",
+        "name": "翻错免死金牌",
+        "emoji": "🛡️",
+        "description": "答错不扣分，保留一次机会",
+        "price_coin": 50,
+        "effect_type": "retry",
+        "effect_value": 1,
+        "effect_duration_min": 0,
+    },
+    {
+        "id": str(CO_SPEED_TEA),
+        "code": "speed-tea",
+        "name": "速效提神茶",
+        "emoji": "🍵",
+        "description": "任务限时延长50%",
+        "price_coin": 80,
+        "effect_type": "time_extend",
+        "effect_value": 50,
+        "effect_duration_min": 15,
+    },
+    {
+        "id": str(CO_XP_ELIXIR),
+        "code": "xp-elixir",
+        "name": "精英经验精华",
+        "emoji": "💎",
+        "description": "24小时内全任务经验+100%（稀有）",
+        "price_coin": 500,
+        "effect_type": "xp_boost",
+        "effect_value": 100,
+        "effect_duration_min": 1440,
+    },
+]
+
+
+# ═══════════════════════════════════════════════
+#  配方
+# ═══════════════════════════════════════════════
+CRAFT_RECIPES = [
+    {
+        "id": str(uuid.UUID("d0000000-0000-0000-0000-000000000001")),
+        "result_item_type": "equipment",
+        "result_item_id": str(EQ_TRANSLATOR_EYE),
+        "name": "炼金·翻译之眼",
+        "description": "用2个学士长袍 + 1瓶经验药水合成翻译之眼",
+        "ingredients": {
+            "items": [
+                {"item_id": str(EQ_SCHOLAR_ROBE), "item_type": "equipment", "quantity": 2},
+                {"item_id": str(CO_XP_POTION), "item_type": "consumable", "quantity": 1},
+            ]
+        },
+        "gold_cost": 200,
+    },
+    {
+        "id": str(uuid.UUID("d0000000-0000-0000-0000-000000000002")),
+        "result_item_type": "equipment",
+        "result_item_id": str(EQ_MAGIC_DICT),
+        "name": "炼金·魔法词典",
+        "description": "用1个翻译之眼 + 2瓶经验药水 + 300金币合成魔法词典",
+        "ingredients": {
+            "items": [
+                {"item_id": str(EQ_TRANSLATOR_EYE), "item_type": "equipment", "quantity": 1},
+                {"item_id": str(CO_XP_POTION), "item_type": "consumable", "quantity": 2},
+            ]
+        },
+        "gold_cost": 300,
+    },
+    {
+        "id": str(uuid.UUID("d0000000-0000-0000-0000-000000000003")),
+        "result_item_type": "consumable",
+        "result_item_id": str(CO_XP_ELIXIR),
+        "name": "炼金·精英经验精华",
+        "description": "用3瓶经验药水 + 1张双倍金币卡 + 500金币合成精英经验精华",
+        "ingredients": {
+            "items": [
+                {"item_id": str(CO_XP_POTION), "item_type": "consumable", "quantity": 3},
+                {"item_id": str(CO_DOUBLE_COIN_CARD), "item_type": "consumable", "quantity": 1},
+            ]
+        },
+        "gold_cost": 500,
+    },
+]
+
+
+# ═══════════════════════════════════════════════
 #  执行播种
 # ═══════════════════════════════════════════════
 async def seed_rpg_world():
@@ -303,9 +486,24 @@ async def seed_rpg_world():
             session.add(QuestTemplate(**q))
         logger.info(f"✅ 播种 {len(QUEST_TEMPLATES)} 个任务模板")
 
+        # ── 装备 ──
+        for e in EQUIPMENTS:
+            session.add(Equipment(**e))
+        logger.info(f"✅ 播种 {len(EQUIPMENTS)} 件装备")
+
+        # ── 消耗品 ──
+        for c in CONSUMABLES:
+            session.add(Consumable(**c))
+        logger.info(f"✅ 播种 {len(CONSUMABLES)} 种消耗品")
+
+        # ── 配方 ──
+        for r in CRAFT_RECIPES:
+            session.add(CraftRecipe(**r))
+        logger.info(f"✅ 播种 {len(CRAFT_RECIPES)} 个配方")
+
         await session.commit()
 
-    logger.info(f"🎉 RPG世界播种完成！{len(ZONES)}区 {len(ZONE_NODES)}场景 {len(QUEST_TEMPLATES)}任务")
+    logger.info(f"🎉 RPG世界播种完成！{len(ZONES)}区 {len(ZONE_NODES)}场景 {len(QUEST_TEMPLATES)}任务 {len(EQUIPMENTS)}装备 {len(CONSUMABLES)}消耗品 {len(CRAFT_RECIPES)}配方")
     return {
         "status": "ok",
         "zones": len(ZONES),
